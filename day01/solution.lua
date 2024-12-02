@@ -22,6 +22,8 @@ for line in file:lines() do
     end
 end
 
+io.input():close()
+
 -- PART 1 SOLUTION:
 
 -- sort the lists
