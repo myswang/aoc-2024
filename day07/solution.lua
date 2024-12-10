@@ -9,7 +9,7 @@ local function do_math(result, nums, acc, idx)
 
     return do_math(result, nums, acc + num, idx - 1)
         or do_math(result, nums, acc * num, idx - 1)
-        or do_math(result, nums, tonumber(tostring(acc) .. tostring(num)), idx - 1)
+        or do_math(result, nums, acc * 10 ^ math.floor(math.log(num, 10) + 1) + num, idx - 1)
 end
 
 -- open the file
