@@ -1,6 +1,8 @@
 local function do_math(result, nums, acc, idx)
     if idx == 0 then
         return acc == result
+    elseif acc > result then
+        return false
     end
 
     local num = nums[idx]
