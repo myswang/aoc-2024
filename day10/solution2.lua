@@ -26,8 +26,7 @@ for _, start in ipairs(trailheads) do
     local stack = {start}
     while #stack > 0 do
         local pos = table.remove(stack)
-        local y = pos[1]
-        local x = pos[2]
+        local y, x = table.unpack(pos)
         if lines[y][x] == 9 then
             score = score + 1
         else
@@ -38,8 +37,7 @@ for _, start in ipairs(trailheads) do
             if x < #lines[1] then table.insert(neighbours, {y, x+1}) end
 
             for _, neighbour in ipairs(neighbours) do
-                local y0 = neighbour[1]
-                local x0 = neighbour[2]
+                local y0, x0 = table.unpack(neighbour)
                 if lines[y0][x0] - lines[y][x] == 1 then
                     table.insert(stack, neighbour)
                 end
