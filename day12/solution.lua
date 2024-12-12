@@ -66,7 +66,6 @@ end
 local function flood_fill(y, x)
     local area = 0
     local perimeter = 0
-    local plot_type = garden[y][x]
     local stack = {{y, x}}
     local edge_points = {}
     visited[y][x] = true
@@ -78,17 +77,12 @@ local function flood_fill(y, x)
         for _, offset in ipairs(offsets) do
             local dy, dx = table.unpack(offset)
             local y1, x1 = y0 + dy, x0 + dx
-            if y1 >= 1 and x1 >= 1 and y1 <= #garden and x1 <= #garden[1] then
-                if garden[y1][x1] ~= plot_type then
-                    table.insert(edge_points, {y1, x1, dy, dx})
-                    perimeter = perimeter + 1
-                elseif not visited[y1][x1] then
-                    visited[y1][x1] = true
-                    table.insert(stack, {y1, x1})
-                end
-            else
+            if y1 < 1 or x1 < 1 or y1 > #garden or x1 > #garden[1] or garden[y1][x1] ~= garden[y0][x0] then
                 table.insert(edge_points, {y1, x1, dy, dx})
                 perimeter = perimeter + 1
+            elseif not visited[y1][x1] then
+                visited[y1][x1] = true
+                table.insert(stack, {y1, x1})
             end
         end
     end
