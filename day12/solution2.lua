@@ -17,9 +17,8 @@ local visited = {}
 for line in file:lines() do
     table.insert(garden, {})
     table.insert(visited, {})
-    for i = 1, line:len() do
-        local val = line:sub(i, i)
-        table.insert(garden[#garden], val)
+    for char in line:gmatch(".") do
+        table.insert(garden[#garden], char)
         table.insert(visited[#visited], false)
     end
 end
@@ -33,13 +32,11 @@ local function count_edges(edges)
         table.sort(list)
 
         for i = 1, #list do
-            if i ~= 1 then
-                local delta = list[i] - list[i - 1]
-                if delta > 1 then
-                    edge_count = edge_count + 1
-                end
+            if i ~= 1 and list[i] - list[i - 1] > 1 then
+                edge_count = edge_count + 1
             end
         end
+
     end
     return edge_count
 end
@@ -92,10 +89,8 @@ local function flood_fill(y, x)
             end
         end
     end
-    local perimeter = get_edge_count(edge_points)
 
-    local cost = area * perimeter
-    return cost
+    return area * get_edge_count(edge_points)
 end
 
 local total_cost = 0
