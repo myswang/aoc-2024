@@ -32,9 +32,11 @@ end
 parse_file("input.txt")
 
 local count = 0
+local positions = {}
 while not (start[1] == finish[1] and start[2] == finish[2]) do
     local y, x = table.unpack(start)
     track[y][x] = count
+    table.insert(positions, {y, x})
     count = count + 1
     for _, dir in ipairs(dirs) do
         local ny, nx = y + dir[1], x + dir[2]
@@ -46,35 +48,28 @@ while not (start[1] == finish[1] and start[2] == finish[2]) do
     end
 end
 track[finish[1]][finish[2]] = count
+table.insert(positions, {finish[1], finish[2]})
 
--- iterate in the x direction
-local cheat_count = 0
-for i = 2, #track - 1 do
-    for j = 2, #track[1] - 3 do
-        local left = track[i][j]
-        local mid = track[i][j+1]
-        local right = track[i][j+2]
-        if left ~= "#" and mid == "#" and right ~= "#" then
-            local diff = math.abs(tonumber(right) - tonumber(left)) - 2
+local counter, counter2 = 0, 0
+for i = 1, #positions do
+    local y0, x0 = table.unpack(positions[i])
+    for j = i, #positions do
+        local y, x = table.unpack(positions[j])
+        local dist = math.abs(y - y0) + math.abs(x - x0)
+        if dist <= 2 then
+            local diff = math.abs(track[y][x] - track[y0][x0]) - dist
             if diff >= 100 then
-                cheat_count = cheat_count + 1
+                counter = counter + 1
+            end
+        end
+        if dist <= 20 then
+            local diff = math.abs(track[y][x] - track[y0][x0]) - dist
+            if diff >= 100 then
+                counter2 = counter2 + 1
             end
         end
     end
 end
 
-for i = 2, #track[1] - 3 do
-    for j = 2, #track - 1 do
-        local left = track[i][j]
-        local mid = track[i+1][j]
-        local right = track[i+2][j]
-        if left ~= "#" and mid == "#" and right ~= "#" then
-            local diff = math.abs(tonumber(right) - tonumber(left)) - 2
-            if diff >= 100 then
-                cheat_count = cheat_count + 1
-            end
-        end
-    end
-end
-
-print(cheat_count)
+print(counter)
+print(counter2)
