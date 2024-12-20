@@ -1,5 +1,5 @@
---            1   2  3  4  5
--- registers: PC, A, B, C, Z
+--             1  2  3  4
+-- registers: PC, A, B, C
 local regs = {1}
 local prog = {}
 local output = {}
@@ -20,101 +20,95 @@ local function parse_file(filename)
             end
         end
     end
-    table.insert(regs, 0)
-
-    table.insert(prog, 8)
-    table.insert(prog, 0)
     io.input():close()
 end
 
-local function ht()
-    regs[1] = -1
-end
-
-local function wr(A)
-    regs[A] = regs[5]
-end
-
-local function ot()
-    table.insert(output, regs[5])
-end
-
-local function dv(A)
-    local val = A
+local function get_val(A)
     if A > 3 then
-        val = regs[A-2]
+        A = regs[A - 2]
     end
-    regs[5] = regs[2] >> val
+    return A
+end
+
+local function idv(A, B)
+    regs[B] = regs[2] >> get_val(A)
     regs[1] = regs[1] + 2
 end
 
-local function xl(val)
-    regs[5] = regs[3] ~ val
-    regs[1] = regs[1] + 2
-end
-
-local function xc()
-    regs[5] = regs[3] ~ regs[4]
-    regs[1] = regs[1] + 2
-end
-
-local function md(A)
-    local val = A
-    if A > 3 then
-        val = regs[A-2]
+local function bxi(A)
+    if A == -1 then
+        A = regs[4]
     end
-    regs[5] = val % 8
+    regs[3] = regs[3] ~ A
     regs[1] = regs[1] + 2
 end
 
-local function jn(val)
+local function ist(A, B)
+    local res = get_val(A) % 8
+    if B == -1 then
+        table.insert(output, res)
+    else
+        regs[3] = res
+    end
+    regs[1] = regs[1] + 2
+end
+
+local function jnz(A)
     if regs[2] ~= 0 then
-        regs[5] = val + 1
+        regs[1] = A + 1
     else
-        regs[5] = regs[1] + 2
+        regs[1] = regs[1] + 2
     end
 end
 
-
-local function execute(opcode, val)
+local function execute(opcode, operand)
     if opcode == 0 then     -- adv
-        dv(val)
-        wr(2)
+        idv(operand, 2)
     elseif opcode == 1 then -- bxl
-        xl(val)
-        wr(3)
+        bxi(operand)
     elseif opcode == 2 then -- bst
-        md(val)
-        wr(3)
+        ist(operand, 3)
     elseif opcode == 3 then -- jnz
-        jn(val)
-        wr(1)
+        jnz(operand)
     elseif opcode == 4 then -- bxc
-        xc()
-        wr(3)
+        bxi(-1)
     elseif opcode == 5 then -- out
-        md(val)
-        ot()
+        ist(operand, -1)
     elseif opcode == 6 then -- bdv
-        dv(val)
-        wr(3)
+        idv(operand, 3)
     elseif opcode == 7 then -- cdv
-        dv(val)
-        wr(4)
-    elseif opcode == 8 then
-        ht()
+        idv(operand, 4)
     else
-        print("unsupported opcode: "..opcode)
-        ht()
+        print("unsuppored opcode: "..opcode)
+        os.exit(1)
+    end
+end
+
+-- reverse engineered program from my own input
+-- this probably won't work with other inputs
+local function find(program, ans, iter)
+    if iter == 0 then return ans end
+    for t = 0, 7 do
+        local a = (ans << 3) + t
+        local b = a % 8
+        b = b ~ 3
+        local c = a >> b
+        b = b ~ 5
+        b = b ~ c
+        if b % 8 == program[iter] then
+            local sub = find(program, a, iter-1)
+            if not sub then goto continue end
+            return sub
+        end
+        ::continue::
     end
 end
 
 parse_file("input.txt")
 
-while regs[1] ~= -1 do
+while true do
     local pc = regs[1]
     if not prog[pc] or not prog[pc+1] then
-        ht()
         break
     else
         execute(prog[pc], prog[pc+1])
@@ -122,3 +116,4 @@ while regs[1] ~= -1 do
 end
 
 print(table.concat(output, ","))
+print(find(prog, 0, #prog))
